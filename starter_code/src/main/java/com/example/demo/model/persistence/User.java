@@ -7,7 +7,10 @@ import javax.persistence.*;
 
 
 @Entity
-@Table(name = "user")
+// add quote to the table name to avoid key word conflict for Spring 2.7
+// according to https://stackoverflow.com/questions/72546596/tests-failing-when-upgrading-to-spring-boot-2-7-commandacceptanceexception-e
+
+@Table(name="\"user\"")
 public class User {
 
 	@Id
