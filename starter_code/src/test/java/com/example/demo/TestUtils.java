@@ -8,6 +8,9 @@ import java.lang.reflect.Field;
  */
 public class TestUtils {
 
+    public static final String USER_NAME = "test";
+    public static final String PASSWORD = "testPassword";
+
     public static void injectObjects(Object target, String fieldName, Object toInject){
         boolean wasPrivate = false;
 

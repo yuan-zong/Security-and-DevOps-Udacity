@@ -10,6 +10,8 @@ import org.junit.Test;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.util.Optional;
+
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,25 +34,65 @@ public class UserControllerTest {
         TestUtils.injectObjects(userController,"cartRepository",cartRepo);
         TestUtils.injectObjects(userController,"bCryptPasswordEncoder",encoder);
     }
+    public CreateUserRequest getCreateUserRequest(){
+        CreateUserRequest r = new CreateUserRequest();
+        r.setUsername(TestUtils.USER_NAME);
+        r.setPassword(TestUtils.PASSWORD);
+        r.setConfirmPassword(TestUtils.PASSWORD);
+        return r;
+    }
 
     @Test
     public void create_user_happy_path() throws Exception{
-        when(encoder.encode("testPassword")).thenReturn("thisIsHashed");
-        CreateUserRequest r = new CreateUserRequest();
-        r.setUsername("test");
-        r.setPassword("testPassword");
-        r.setConfirmPassword("testPassword");
+        when(encoder.encode(TestUtils.PASSWORD)).thenReturn("thisIsHashed");
 
-        final ResponseEntity<User> response = userController.createUser(r);
+        final ResponseEntity<User> responseCreate = userController.createUser(getCreateUserRequest());
 
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(responseCreate);
+        assertEquals(200, responseCreate.getStatusCodeValue());
 
-        User u = response.getBody();
+        User u = responseCreate.getBody();
         assertNotNull(u);
         assertEquals(0, u.getId());
-        assertEquals("test", u.getUsername());
+        assertEquals(TestUtils.USER_NAME, u.getUsername());
         assertEquals("thisIsHashed", u.getPassword());
     }
 
+    @Test
+    public void createUserBadRequest() throws Exception{
+        CreateUserRequest r = getCreateUserRequest();
+        r.setConfirmPassword("nothing");
+        final ResponseEntity<User> responseBad = userController.createUser(r);
+        assertNotNull(responseBad);
+        assertEquals(400, responseBad.getStatusCodeValue());
+    }
+
+    @Test
+    public void findUserHappyPath() {
+
+        User userTest = new User(1L, TestUtils.USER_NAME, TestUtils.PASSWORD);
+        when(userRepo.findByUsername(TestUtils.USER_NAME)).thenReturn(userTest);
+
+        final ResponseEntity<User> responseByName = userController.findByUserName(TestUtils.USER_NAME);
+        User u = responseByName.getBody();
+        assertNotNull(u);
+        assertEquals(1L, u.getId());
+        assertEquals(TestUtils.USER_NAME, u.getUsername());
+
+        when(userRepo.findById(1L)).thenReturn(Optional.of(userTest));
+
+        final ResponseEntity<User> responseByID = userController.findById(userTest.getId());
+        u = responseByID.getBody();
+        assertNotNull(u);
+        assertEquals(1L, u.getId());
+        assertEquals(TestUtils.USER_NAME, u.getUsername());
+    }
+
+    @Test
+    public void findUserUnhappyPath() {
+        final ResponseEntity<User> responseByName = userController.findByUserName("notAName");
+        assertNull(responseByName.getBody());
+        final ResponseEntity<User> responseByID = userController.findById(2L);
+        assertNull(responseByID.getBody());
+    }
 }
