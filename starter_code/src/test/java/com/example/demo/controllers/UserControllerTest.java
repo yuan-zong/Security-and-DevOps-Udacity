@@ -60,11 +60,18 @@ public class UserControllerTest {
 
     @Test
     public void createUserBadRequest() throws Exception{
-        CreateUserRequest r = getCreateUserRequest();
-        r.setConfirmPassword("nothing");
-        final ResponseEntity<User> responseBad = userController.createUser(r);
-        assertNotNull(responseBad);
-        assertEquals(400, responseBad.getStatusCodeValue());
+        CreateUserRequest rPasswordNotMatch = getCreateUserRequest();
+        rPasswordNotMatch.setConfirmPassword("nothing");
+        final ResponseEntity<User> responsePasswordNotMatch = userController.createUser(rPasswordNotMatch);
+        assertNotNull(responsePasswordNotMatch);
+        assertEquals(400, responsePasswordNotMatch.getStatusCodeValue());
+        
+        CreateUserRequest rPasswordTooShort = getCreateUserRequest();
+        rPasswordTooShort.setPassword("short");
+        rPasswordTooShort.setConfirmPassword("short");
+        final ResponseEntity<User> responsePasswordTooShort = userController.createUser(rPasswordTooShort);
+        assertNotNull(responsePasswordTooShort);
+        assertEquals(400, responsePasswordTooShort.getStatusCodeValue());
     }
 
     @Test
