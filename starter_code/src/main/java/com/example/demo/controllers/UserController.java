@@ -35,7 +35,7 @@ public class UserController {
 	public ResponseEntity<User> findByUserName(@PathVariable String username) {
 		User user = userRepository.findByUsername(username);
 		if (user == null) {
-			log.warn("User \"" + username + "\" cannot be found");
+			log.warn("USER_NOT_FOUND. User \"" + username + "\" cannot be found");
 		}
 		return user == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(user);
 	}
@@ -43,11 +43,11 @@ public class UserController {
 	@PostMapping("/create")
 	public ResponseEntity<User> createUser(@RequestBody CreateUserRequest createUserRequest) {
 		if (createUserRequest.getPassword().length()<7) {
-			log.error("Length of the password is less than 7. Creation failed");
+			log.error("USER_CREATE_FAILED. Length of the password is less than 7.");
 			return ResponseEntity.badRequest().build();
 		}
 		if (!createUserRequest.getPassword().equals(createUserRequest.getConfirmPassword())) {
-			log.error("Confirmed password does not match password. Creation failed");
+			log.error("USER_CREATE_FAILED. Confirmed password does not match password.");
 			return ResponseEntity.badRequest().build();
 		}
 		User user = new User();
@@ -57,7 +57,7 @@ public class UserController {
 		user.setCart(cart);
 		user.setPassword(bCryptPasswordEncoder.encode(createUserRequest.getPassword()));
 		userRepository.save(user);
-		log.info("User \"" + user.getUsername() + "\" is created");
+		log.info("USER_CREATE_SUCCEEDED. User \"" + user.getUsername() + "\" is created");
 		return ResponseEntity.ok(user);
 	}
 
